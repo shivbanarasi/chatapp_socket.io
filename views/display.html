@@ -49,7 +49,9 @@
         </div>
        <div style="background-color: aqua; width: 70%; margin: 0 0 5% 25%;">
         <label for="massage"></label>
-        <input type="text" name="massage" id="massage" placeholder="write your massage here..." style="width: 83%;">
+        <input type="text" name="massage" id="massage" placeholder="write your massage here..." style="width: 75%;">
+        
+        <input type="file" id="myfile" name="myfile" multiple>
         <button onclick="massage()" style="width: 100px; background-color: blue;color: white;">send</button>
        </div>
        <a id="logout" href="/views/login.html" style="margin: 2% 20% 10% 30%;">logout</a> 
@@ -64,10 +66,11 @@
  
   let socket = io();
   function massage(){
-    
+      const file=document.getElementById("myfile").value
+      console.log(file)
       const massage=document.getElementById('massage').value;
       massage.innerHTML='';
-    socket.emit("send",{massage:massage,groupId:groupId,id:id,name:name},groupId)
+    socket.emit("send",{massage:massage,groupId:groupId,id:id,name:name,file:file},groupId)
     
   }
 
@@ -78,10 +81,20 @@
 for(let ele of data.response){
   if(`${ele.Members}`===id){
     console.log(data.massage)
-    const para=document.createElement('p');
+    if(data.massage!=null){
+      const para=document.createElement('p');
     para.innerHTML=data.massage
     para.className='show'
     document.getElementById('receiving').appendChild(para)
+    }
+    if(data.fileURL!=null){
+      const para=document.createElement('a');
+    para.innerHTML=data.fileURL.split("/")[data.fileURL.length-1]
+    para.setAttribute("href", `${data.fileURL}`);
+    para.className='show'
+    document.getElementById('receiving').appendChild(para)
+    }
+    
   }
 }
     

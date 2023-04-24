@@ -31,9 +31,43 @@ sequelize.sync(
 
     io.on("connection",socket=>{
         console.log(socket.id);
-
+const fileURL="";
         socket.on("send",(data,room)=>{
-            //console.log(id)
+            const myArray = data.file.split("/");
+            if(data.file!=null){
+                const datae=data.file;
+    const filename=`${myArray[myArray.length-1]}`;
+    const BUCKET_NAME=process.env.BUCKET_NAME;
+    const IAM_USER_KEY=process.env.IAM_USER_KEY;
+    const IAM_USER_SECRET=process.env.IAM_USER_SECRET;
+
+    let s3bucket=new AWS.S3({
+        accessKeyId:IAM_USER_KEY,
+        secretAccessKey:IAM_USER_SECRET,
+        bucket:BUCKET_NAME
+    })
+
+    s3bucket.createBucket(()=>{
+        var params={
+            Bucket:BUCKET_NAME,
+            Key:filename,
+            Body:datae,
+            ACL:'public-read'
+        }
+       
+            s3bucket.upload(params,(err,s3response)=>{
+                if(err){
+                    console.log('something went wrong',err)
+                   
+                }else{
+                    console.log('success',s3response.Location)
+                  fileURL=s3response.Location;
+                  
+}
+            })
+        })
+            }
+        
            Massage.create({
             massage:data.massage,
             groupId:data.groupId,
@@ -47,7 +81,7 @@ sequelize.sync(
             }
            })
            .then(response=>{
-            io.emit("instent",{massage:`${data.name} : ${data.massage}`,response})
+            io.emit("instent",{massage:`${data.name} : ${data.massage}`,response,fileURL})
            }) 
            }) 
         
