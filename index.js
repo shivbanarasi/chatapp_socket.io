@@ -145,8 +145,8 @@ const fileURL="";
     })
     
     cron.schedule(
-        //'0 0 * * 1-6',
-        '1 * * * *',
+        '0 0 * * 1-6',
+       // '1 * * * *',
         function() {
             console.log('You will see this message every second');
             sequelize.query(`INSERT INTO archivedmassages SELECT * FROM massages WHERE createdAt<=date_sub(current_timestamp,interval 1 day)`)
