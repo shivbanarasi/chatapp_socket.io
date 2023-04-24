@@ -6,7 +6,7 @@ const User=require('./models/user')
 const Massage=require('./models/chatMassage')
 const ArchiveMassage=require('./models/ArchivedChat')
 const route=require('./route/route')
-var CronJob = require('cron').CronJob;
+const cron = require("node-cron");
 const bodyParser=require('body-parser');
 const AWS=require('aws-sdk')
 const Group = require('./models/group');
@@ -144,17 +144,17 @@ const fileURL="";
         })
     })
     
-    var job = new CronJob(
+    cron.schedule(
         //'0 0 * * 1-6',
         '1 * * * *',
         function() {
             console.log('You will see this message every second');
-            sequelize.query(`INSERT INTO archivedmassages SELECT * FROM massages WHERE createdAt<=CURRENT_TIMESTAMP`)
-            sequelize.query('DELETE FROM massages WHERE createdAt<=CURRENT_TIMESTAMP')
+            sequelize.query(`INSERT INTO archivedmassages SELECT * FROM massages WHERE createdAt<=date_sub(current_timestamp,interval 1 day)`)
+            sequelize.query('DELETE FROM massages WHERE createdAt<=date_sub(current_timestamp,interval 1 day)')
         },
         
     );  
-    job;
+    
 
 http.listen(process.env.PORT,()=>{
     console.log(`server is listing to :${process.env.PORT}`)
