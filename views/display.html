@@ -78,6 +78,7 @@
 
 
   socket.on('instent',(data)=>{
+    console.log(data.fileURL)
 for(let ele of data.response){
   if(`${ele.Members}`===id){
     console.log(data.massage)
@@ -87,7 +88,7 @@ for(let ele of data.response){
     para.className='show'
     document.getElementById('receiving').appendChild(para)
     }
-    if(data.fileURL!=null){
+    if(data.fileURL!=""){
       const para=document.createElement('a');
     para.innerHTML=data.fileURL.split("/")[data.fileURL.length-1]
     para.setAttribute("href", `${data.fileURL}`);
@@ -167,9 +168,9 @@ socket.on('receive',(data)=>{
     const friendsbutt=document.createElement('button');
   friendsbutt.innerHTML=data.name;
   friendsbutt.addEventListener("click",()=>{
-    localStorage.setItem('groupId',data.id);
+    //localStorage.setItem('groupId',data.id);
     //localStorage.setItem('id',data.id)
-    socket.emit('addtogroup',{groupId:groupId,id:id})
+    socket.emit('addtogroup',{groupId:groupId,id:data.id})
     window.location.href="http://localhost:4000/views/display.html"
   })
   document.getElementById('friends').appendChild(friendsbutt)
