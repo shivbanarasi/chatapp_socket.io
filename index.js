@@ -10,7 +10,6 @@ const cron = require("node-cron");
 const bodyParser=require('body-parser');
 const AWS=require('aws-sdk')
 const Group = require('./models/group');
-//const { Socket } = require('socket.io-client');
 const app=express();
 const http=require('http').Server(app)
 const io=require('socket.io')(http)
@@ -77,7 +76,6 @@ const fileURL="";
             userId:data.id,
             name:data.name
            })
-           //socket.emit("receive",`${data.name} : ${data.massage}`)
            Group.findAll({
             where:{
                 groupId:data.groupId
@@ -92,6 +90,15 @@ const fileURL="";
             Group.create({
                 groupId:data.groupId,
                 Members:data.id
+            })
+           })
+
+           socket.on('removefromgroup',(data)=>{
+            Group.destroy({
+                where:{
+                    groupId:data.groupId,
+                    Members:data.id
+                }
             })
            })
 
@@ -117,16 +124,9 @@ const fileURL="";
                    
                     socket.emit("receive",{massage:data,response})
                    }) 
-
-               // socket.emit("receive",{massage:`${response[i].name} : ${response[i].massage}`})
             })
         })
-        // Massage.findAll()
-        // .then(response=>{
-        //     for(let i=0;i<response.length;i++)
-        //     socket.emit("receive",`${response[i].name} : ${response[i].massage}`)
-        // })
-
+    
         Group.findAll()
         .then(response=>{
             for(let i=0;i<response.length;i++)
@@ -135,8 +135,8 @@ const fileURL="";
         
         User.findAll()
         .then(response=>{
-            for(let i=0;i<response.length;i++)
-            socket.emit("friendslist",{name:response[i].name,id:response[i].id})
+            //for(let i=0;i<response.length;i++)
+            socket.emit("friendslist",response)
         })
     
         socket.on("disconnect",()=>{
@@ -149,8 +149,8 @@ const fileURL="";
        // '1 * * * *',
         function() {
             console.log('You will see this message every second');
-            sequelize.query(`INSERT INTO archivedmassages SELECT * FROM massages WHERE createdAt<=date_sub(current_timestamp,interval 1 day)`)
-            sequelize.query('DELETE FROM massages WHERE createdAt<=date_sub(current_timestamp,interval 1 day)')
+            sequelize.query(`INSERT INTO archivedmassages SELECT * FROM massages WHERE createdAt between date_sub(current_timestamp,interval 2 day) and date_sub(current_timestamp,interval 1 day)`)
+            sequelize.query('DELETE FROM massages WHERE createdAt between date_sub(current_timestamp,interval 2 day) and date_sub(current_timestamp,interval 1 day)')
         },
         
     );  

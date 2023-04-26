@@ -63,15 +63,17 @@
   const groupId=localStorage.getItem('groupId')
   const id=localStorage.getItem("id")
   const name=localStorage.getItem("name")
+  const admin=localStorage.getItem("admin")
+  const member=JSON.parse(localStorage.getItem("member"))
  
   let socket = io();
   function massage(){
       const file=document.getElementById("myfile").value
       console.log(file)
-      const massage=document.getElementById('massage').value;
-      massage.innerHTML='';
-    socket.emit("send",{massage:massage,groupId:groupId,id:id,name:name,file:file},groupId)
-    
+      let massage=document.getElementById('massage');
+      
+    socket.emit("send",{massage:massage.value,groupId:groupId,id:id,name:name,file:file},groupId)
+    massage.value=" ";
   }
 
   socket.emit('sendInfo',{groupId:groupId,id:id})
@@ -102,13 +104,14 @@ for(let ele of data.response){
     
   })
 
-
+//var Member=["a"];
 socket.on('receive',(data)=>{
-    console.log(`${data.response[0].Members}`,data.massage)
-    // for(let ele of data.response){
-    //   console.log(ele.Members)
+    console.log(data.response,data.massage)
+    localStorage.setItem('member',JSON.stringify(data.response))
+    localStorage.setItem('admin',data.response[0].admin)
     for(let i=0;i<data.response.length;i++){
       console.log(data.response[i].Members)
+      //Member.push(i)
       if(`${data.response[i].Members}`===id){
         for(let j=0;j<data.massage.length;j++){
           const para=document.createElement('p');
@@ -123,10 +126,6 @@ socket.on('receive',(data)=>{
     }
     
   })
-
-  
-
-  //for writing name
   async function getdata(){
     axios.get(`http://localhost:4000/views/getdata/`,{headers:{'Authorization':token}})
     .then( res=>{
@@ -153,7 +152,7 @@ socket.on('receive',(data)=>{
   groupbutt.innerHTML=data.name;
   groupbutt.addEventListener("click",()=>{
     localStorage.setItem('groupId',data.groupId)
-    //socket.emit('join-room',data.groupId)
+    
     window.location.href="http://localhost:4000/views/display.html"
   })
   document.getElementById('created').appendChild(groupbutt)
@@ -161,23 +160,49 @@ socket.on('receive',(data)=>{
  
  })
 
+ for(let ele of member){
+  console.log(ele.Members)
+ }
  
-
+let count=0;
  socket.on('friendslist',(data)=>{
-  if(id!=data.id){
-    const friendsbutt=document.createElement('button');
-  friendsbutt.innerHTML=data.name;
+  console.log(data)
+  for(let i=0;i<data.length;i++){
+  console.log(data[i].id)
+  if(id===admin){
+    if(id!=data[i].id){
+      for(let j=0;j<member.length;j++){
+        console.log(data[i].id!==member[j].Members)
+        if(member[j].Members===data[i].id){
+          const friendsbutt=document.createElement('button');
+          
+  friendsbutt.innerHTML=`remove ${data[i].name}`;
   friendsbutt.addEventListener("click",()=>{
-    //localStorage.setItem('groupId',data.id);
-    //localStorage.setItem('id',data.id)
-    socket.emit('addtogroup',{groupId:groupId,id:data.id})
+    socket.emit('removefromgroup',{groupId:groupId,id:data[i].id})
     window.location.href="http://localhost:4000/views/display.html"
   })
   document.getElementById('friends').appendChild(friendsbutt)
+        }else{
+          count++
+        }
+      }
+      console.log(count)
+        if(count==member.length) {
+  const friendsbutt=document.createElement('button');
+friendsbutt.innerHTML=`add ${data[i].name}`;
+  friendsbutt.addEventListener("click",()=>{
+    socket.emit('addtogroup',{groupId:groupId,id:data[i].id})
+    window.location.href="http://localhost:4000/views/display.html"
+  })
+  document.getElementById('friends').appendChild(friendsbutt)
+ }
+ count=0;
+    }
   }
- 
+  }
+})
   
- })
+  
 
  const logout=document.getElementById('logout');
     logout.addEventListener("click",()=>{
